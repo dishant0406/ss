@@ -11,6 +11,8 @@ const app = express();
 
 app.use(bodyParser.json());
 
+const sleep = ms => new Promise(res => setTimeout(res, ms));
+
 app.get('/screenshot', async (req, res) => {
   const {
     url = 'https://www.google.com',
@@ -41,10 +43,15 @@ app.get('/screenshot', async (req, res) => {
       width: 1920
     });
     await page.goto(url, {
-      wait: parseInt(wait, 10)
+      waitUntil: ['load', 'domcontentloaded', 'networkidle0', 'networkidle2'],
     });
+
+    if (wait > 0) {
+      await sleep(wait);
+    }
+
     const screenshot = await page.screenshot({
-      type: 'png'
+      type: 'png',
     });
 
     const resizedScreenshot = await sharp(screenshot)
