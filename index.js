@@ -34,7 +34,26 @@ app.get('/screenshot', async (req, res) => {
     browser = await puppeteer.launch({
       executablePath,
       headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox'],
+      args: [
+        // Use the `--no-sandbox` flag in CI environment for Puppeteer to work correctly
+        '--no-sandbox',
+        //use of the `--disable-setuid-sandbox` flag is not recommended as it reduces the security of the Chrome instance
+        '--disable-setuid-sandbox',
+        //use of the `--disable-dev-shm-usage` flag to prevent the browser from using /dev/shm
+        '--disable-dev-shm-usage',
+        //use of the `--disable-accelerated-2d-canvas` flag to disable hardware acceleration
+        '--disable-gpu',
+        //use of the `--no-first-run` flag to prevent the browser from showing a first run dialog
+        '--no-first-run',
+        //use of the `--no-zygote` flag to prevent the browser from starting a zygote process for each child process
+        '--no-zygote',
+        //use of the `--single-process` flag to prevent the browser from starting multiple processes
+        '--single-process',
+        //use of the `--disable-extensions` flag to prevent the browser from loading extensions
+        '--disable-extensions',
+
+
+      ],
     });
 
     const page = await browser.newPage();
@@ -46,13 +65,29 @@ app.get('/screenshot', async (req, res) => {
       waitUntil: ['load', 'domcontentloaded', 'networkidle0', 'networkidle2'],
     });
 
-    if (wait > 0) {
-      await sleep(wait);
+    if (parseInt(wait, 10) > 0) {
+      await sleep(
+        parseInt(wait, 10)
+      );
+    }
+    let attempt = 0;
+    let success = false;
+    let screenshot;
+
+    while (!success && attempt < 3) { // Attempt to capture the screenshot up to 3 times
+      try {
+        screenshot = await page.screenshot({ type: 'png' });
+        success = true; // If screenshot is successful, exit the loop
+      } catch (error) {
+        console.error(`Screenshot attempt ${attempt + 1} failed: ${error.message}`);
+        attempt++;
+        await sleep(1000); // Wait a bit before retrying
+      }
     }
 
-    const screenshot = await page.screenshot({
-      type: 'png',
-    });
+    if (!success) {
+      throw new Error('Failed to capture screenshot after multiple attempts.');
+    }
 
     const resizedScreenshot = await sharp(screenshot)
       .resize(
