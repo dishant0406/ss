@@ -51,7 +51,8 @@ app.get('/screenshot', async (req, res) => {
         '--single-process',
         //use of the `--disable-extensions` flag to prevent the browser from loading extensions
         '--disable-extensions',
-
+        //use of '--disable-feature=site-per-process' flag to disable site isolation
+        '--disable-features=site-per-process',
 
       ],
     });
