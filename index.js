@@ -3,6 +3,7 @@ import bodyParser from 'body-parser';
 import captureWebsite from 'capture-website';
 import dotenv from 'dotenv';
 import sharp from 'sharp';
+const locateChrome = require('locate-chrome');
 
 dotenv.config();
 
@@ -38,12 +39,26 @@ app.get('/screenshot', async (req, res) => {
     return res.status(400).send('Wait must be a number');
   }
 
+  const executablePath = await new Promise(resolve => locateChrome((arg) => resolve(arg))) || '';
+
   const website = await captureWebsite.buffer(url, {
     width: 1920,
     height: 1080,
     type,
     quality: (type === 'webp' || type === 'jpeg') ? quality : undefined,
     delay: parseFloat(wait),
+    launchOptions: {
+      executablePath,
+      headless: true,
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-accelerated-2d-canvas',
+        '--disable-gpu',
+        '--window-size=1920,1080'
+      ]
+    }
   });
 
   const image = await sharp(website)
