@@ -2,8 +2,7 @@ import express from 'express';
 import bodyParser from 'body-parser';
 import captureWebsite from 'capture-website';
 import dotenv from 'dotenv';
-import sharp from 'sharp';
-const locateChrome = require('locate-chrome');
+import locateChrome from 'locate-chrome';
 
 dotenv.config();
 
