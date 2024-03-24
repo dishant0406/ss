@@ -3,6 +3,7 @@ import bodyParser from 'body-parser';
 import captureWebsite from 'capture-website';
 import dotenv from 'dotenv';
 import locateChrome from 'locate-chrome';
+import sharp from 'sharp';
 
 dotenv.config();
 
