@@ -18,7 +18,7 @@ app.get('/screenshot', async (req, res) => {
     url = 'https://www.google.com',
     width = 400,
     height = 225,
-    type = 'webp',
+    type = 'jpeg',
     quality = 100,
     wait = 0
   } = req.query;
@@ -62,7 +62,7 @@ app.get('/screenshot', async (req, res) => {
   });
 
   const image = await sharp(website)
-    .resize(parseInt(width), parseInt(height))
+    .resize(parseInt(width), parseInt(height)).toFormat('webp')
     .toBuffer();
 
   res.type(`image/${type}`);
